@@ -259,9 +259,8 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 				printf("\n-- %s's Pokedex Menu --\n", currentOwner->ownerName);
 				ownerMenu = generateOwnerMenu(ownerHead);
 				currentMenu = &ownerMenu;
-			} else {
-				currentMenu = &menus[menuIndex];
 			}
+			currentMenu = &menus[menuIndex];
 			printMenu(currentMenu);
 		}
 
