@@ -264,7 +264,7 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 		}
 		if (fullMenu) {
 			if (menuIndex == EXISTING_POKEDEX_MENU && currentOwner && ownerHead) {
-				printf("\n\n-- %s's Pokedex Menu --\n", currentOwner->ownerName);
+				printf("\n-- %s's Pokedex Menu --\n", currentOwner->ownerName);
 				ownerMenu = generateOwnerMenu(ownerHead);
 				currentMenu = &ownerMenu;
 			}
@@ -955,7 +955,7 @@ void *enterExistingPokedexMenu(MenuIndex menuIndex, int choice, void *param) {
 		ownerMenuItems = NULL;
 	}
 
-    printf("\n\nEntering %s's Pokedex...\n", current->ownerName);
+    printf("\nEntering %s's Pokedex...\n", current->ownerName);
     return menuNavigator(EXISTING_POKEDEX_MENU, NULL);
 }
 
