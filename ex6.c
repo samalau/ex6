@@ -262,7 +262,7 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 					free(ownerMenu.items);
 					ownerMenu.items = NULL;
 				}
-				ownerMenu = generateOwnerMenu(ownerHead, &ownerMenu);
+				ownerMenu = generateOwnerMenu(ownerHead);
 				currentMenu = &ownerMenu;
 			}
 			currentMenu = &menus[menuIndex];
@@ -504,21 +504,21 @@ void printMenu(const Menu *menu) {
 }
 
 
-Menu generateOwnerMenu(OwnerNode *selectedOwner, Menu *ownerMenu) {
-    if (ownerMenu && ownerMenu->items) {
-        for (int i = 0; i < ownerMenu->itemCount; i++) {
-            if (ownerMenu->items[i].prompt) {
-                free(ownerMenu->items[i].prompt);
-                ownerMenu->items[i].prompt = NULL;
-            }
-        }
-		if (ownerMenu->items) {
-			free(ownerMenu->items);
-			ownerMenu->items = NULL;
-		}
-        ownerMenu->items = NULL;
-        ownerMenu->itemCount = 0;
-    }
+Menu generateOwnerMenu(OwnerNode *selectedOwner) {
+    // if (ownerMenu && ownerMenu->items) {
+    //     for (int i = 0; i < ownerMenu->itemCount; i++) {
+    //         if (ownerMenu->items[i].prompt) {
+    //             free(ownerMenu->items[i].prompt);
+    //             ownerMenu->items[i].prompt = NULL;
+    //         }
+    //     }
+	// 	if (ownerMenu->items) {
+	// 		free(ownerMenu->items);
+	// 		ownerMenu->items = NULL;
+	// 	}
+    //     ownerMenu->items = NULL;
+    //     ownerMenu->itemCount = 0;
+    // }
 
     NodeArray pokedexNodes = {NULL, 0, 10};
     pokedexNodes.nodes = malloc(pokedexNodes.capacity * sizeof(PokemonNode *));
@@ -555,11 +555,8 @@ Menu generateOwnerMenu(OwnerNode *selectedOwner, Menu *ownerMenu) {
 		pokedexNodes.nodes = NULL;
 	}
 
-    ownerMenu->items = menuItems;
-    ownerMenu->itemCount = pokedexNodes.size;
-    ownerMenu->styleType = NONE;
-
-    return *ownerMenu;
+    Menu ownerMenu = { NULL, menuItems, pokedexNodes.size, NONE };
+    return ownerMenu;
 }
 // Menu generateOwnerMenu(OwnerNode *selectedOwner) {
 // 	NodeArray pokedexNodes = {NULL, 0, 10};

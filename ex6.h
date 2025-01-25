@@ -121,8 +121,7 @@ const MenuStyles menuStyles = {
 };
 
 typedef struct {
-    char *prompt;
-    // const char *prompt;
+    const char *prompt;
     GenericMenuAction MenuAction;
     MenuIndex nextMenuIndex;
 	MenuStyleType styleType;
@@ -755,8 +754,8 @@ PokemonNode *findParent(PokemonNode *root, PokemonNode *kid);
  */
 void collectAll(PokemonNode *root, NodeArray *na);
 
-Menu generateOwnerMenu(OwnerNode *selectedOwner, Menu *ownerMenu);
-// Menu generateOwnerMenu(OwnerNode *selectedOwner);
+// Menu generateOwnerMenu(OwnerNode *selectedOwner, Menu *ownerMenu);
+Menu generateOwnerMenu(OwnerNode *selectedOwner);
 
 const MenuItem mainMenuItems[] = {
 	{ "New Pokedex", openPokedexMenuWrapper, (MenuIndex)-1, NONE }, 
