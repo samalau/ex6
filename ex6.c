@@ -246,24 +246,40 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 	int choice = 0, fullMenu = YES;
 	const Menu *currentMenu = NULL;
 	Menu ownerMenu = {NULL, NULL, 0, NONE};
+	const Menu *constOwnerMenu = NULL;
 
 	do {
 		if (menuIndex == MAIN_MENU && choice == MAIN_MENU_ITEM_COUNT) {
 			stop();
 			cleanupResources(&param, &ownerMenu);
+			if (constOwnerMenu) {
+				free((void *)constOwnerMenu);
+				constOwnerMenu = NULL;
+			}
 			printf("Goodbye!\n");
 			exit(EXIT_SUCCESS);
 		}
 
 		if (fullMenu) {
 			if (menuIndex == EXISTING_POKEDEX_MENU && currentOwner && ownerHead) {
+				
 				printf("\n-- %s's Pokedex Menu --\n", currentOwner->ownerName);
-				if (ownerMenu.items) {
-					free(ownerMenu.items);
-					ownerMenu.items = NULL;
+				
+				if (constOwnerMenu) {
+					free((void *)constOwnerMenu);
+					constOwnerMenu = NULL;
 				}
-				ownerMenu = generateOwnerMenu(ownerHead);
-				currentMenu = &ownerMenu;
+
+				Menu tempMenu = generateOwnerMenu(ownerHead);
+				constOwnerMenu = (const Menu *)malloc(sizeof(Menu));
+				if (!constOwnerMenu) {
+					stop();
+					cleanupResources(&param, &ownerMenu);
+					printf("Goodbye!\n");
+					exit(EXIT_FAILURE);
+				}
+				memcpy((void *)constOwnerMenu, &tempMenu, sizeof(Menu));
+				currentMenu = constOwnerMenu;
 			}
 			currentMenu = &menus[menuIndex];
 			printMenu(currentMenu);
@@ -288,7 +304,7 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 
 		if (menuIndex == MAIN_MENU) {
 			if (ownerMenu.items) {
-				free(ownerMenu.items);
+				free((void *)ownerMenu.items);
 				ownerMenu.items = NULL;
 			}
 			currentOwner = NULL;
@@ -299,7 +315,7 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 		if (menuIndex == EXISTING_POKEDEX_MENU && (choice == currentMenu->itemCount || currentOwner == NULL)) {
 			menuIndex = MAIN_MENU;
 			if (ownerMenu.items) {
-				free(ownerMenu.items);
+				free((void *)ownerMenu.items);
 				ownerMenu.items = NULL;
 			}
 			cleanupResources(&param, &ownerMenu);
@@ -324,7 +340,7 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 		fullMenu = YES;
 	} while (keepGoing);
 	if (ownerMenu.items) {
-		free(ownerMenu.items);
+		free((void *)ownerMenu.items);
 		ownerMenu.items = NULL;
 	}
 	stop();
@@ -1961,15 +1977,16 @@ void cleanupResources(void **param, Menu *ownerMenu) {
         *param = NULL;
     }
 
-    if (ownerMenu && ownerMenu->items) {
-        for (int i = 0; i < ownerMenu->itemCount; i++) {
-            if (ownerMenu->items[i].prompt) {
-                free(ownerMenu->items[i].prompt);
-            }
-        }
-        free(ownerMenu->items);
+	for (int i = 0; i < ownerMenu->itemCount; i++) {
+		if (ownerMenu->items[i].prompt) {
+			free((void *)ownerMenu->items[i].prompt);
+		}
+	}
+    if (ownerMenu->items) {
+        free((void *)ownerMenu->items);
         ownerMenu->items = NULL;
     }
+	ownerMenu->itemCount = 0;
 }
 
 int main(void) {
