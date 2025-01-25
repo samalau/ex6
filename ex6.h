@@ -129,7 +129,8 @@ typedef struct {
 
 typedef struct {
     const char *title;
-    const MenuItem *items;
+    MenuItem *items;
+    // const MenuItem *items;
     int itemCount;
     MenuStyleType styleType;
 } Menu;
