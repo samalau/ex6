@@ -31,8 +31,11 @@ Assignment: ex6
 /////////////////////////////////////////////////
 
 // program termination flag
-int value = 1;
-int *keepGoing = &value;
+int keepGoing = 1;
+
+void stop() {
+    keepGoing = 0;
+}
 
 /////////////////////////////////////////////////
 
@@ -794,6 +797,8 @@ const Menu menus[] = {
 	{ NONE, existingPokedexMenuItems, EXISTING_POKEDEX_MENU_ITEM_COUNT, NONE}, 
 	{ "Display", displayMenuItems, DISPLAY_MENU_ITEM_COUNT, UNBORDERED_STYLE}
 };
+
+void cleanupResources(void **param, Menu *ownerMenu, int *keepGoing);
 
 /**
  * @brief The main driver loop for the program (new pokedex, merge, fight, etc.).
