@@ -30,7 +30,6 @@ PokemonNode *getRoot() {
     return currentOwner->pokedexRoot;
 }
 
-/////////////////////////////////////////////////
 
 void trimWhitespace(char *str) {
 	if (str == NULL) return;
@@ -63,7 +62,6 @@ char *myStrdup(const char *src) {
 	size_t len = strlen(src) + 1;
 	char *copy = (char *)malloc(len);
 	if (!copy) {
-		printf("Memory allocation failed\n");
 		return NULL;
 	}
 	memcpy(copy, src, len);
@@ -85,9 +83,10 @@ char *getlineCustom(char **buffer, size_t *size) {
     *size = INITIAL_BUFFER_SIZE;
     *buffer = malloc(*size);
     if (*buffer == NULL) {
+		*keepGoing = 0;
+		freeAllOwners();
+		printf("Goodbye!\n");
 		exit(EXIT_FAILURE);
-        // printf("Memory allocation failed.\n");
-        // return NULL;
     }
 
     size_t len = 0;
@@ -102,7 +101,6 @@ char *getlineCustom(char **buffer, size_t *size) {
 			freeAllOwners();
 			printf("Goodbye!\n");
 			exit(EXIT_FAILURE);
-		// return NULL;
         }
 
         len += strlen(*buffer + len);
@@ -117,7 +115,6 @@ char *getlineCustom(char **buffer, size_t *size) {
             *size *= EXPANSION_FACTOR;
             char *temp = realloc(*buffer, *size);
             if (temp == NULL) {
-                // printf("Memory allocation failed.\n");
                 if (*buffer) {
 					free(*buffer);
                 	*buffer = NULL;
@@ -126,61 +123,13 @@ char *getlineCustom(char **buffer, size_t *size) {
 				freeAllOwners();
 				printf("Goodbye!\n");
 				exit(EXIT_FAILURE);
-                // return NULL;
             }
             *buffer = temp;
         }
     }
     return *buffer;
 }
-// char *getlineCustom(char **buffer, size_t *size) {
-// 	if (buffer == NULL || size == NULL) {
-// 		printf("Invalid option\n");
-// 		return NULL;
-// 	}
-// 	if (*buffer) {
-// 		free(*buffer);
-// 		*buffer = NULL;
-// 	}
-// 	*size = INITIAL_BUFFER_SIZE;
-// 	*buffer = malloc(*size);
-// 	if (*buffer == NULL) {
-// 		printf("Memory allocation failed.\n");
-// 		return NULL;
-// 	}
-// 	size_t len = 0;
-// 	int inputRead;
-// 	while (1) {
-// 		inputRead = scanf("%1[^\n]", *buffer + len);
-// 		if (inputRead == EOF) {
-// 			*keepGoing = 0;
-// 			freeAllOwners();
-// 			printf("Goodbye!\n");
-// 			exit(1);
-// 			// return NULL;
-// 		}
-// 		if (inputRead != 1) { 
-// 			scanf("%*c");
-// 			(*buffer)[len] = '\0';
-// 			break;
-// 		}
-// 		len++;
-// 		if (len == *size - 1) {
-// 			*size *= EXPANSION_FACTOR;
-// 			char *temp = realloc(*buffer, *size);
-// 			if (temp == NULL) {
-// 				printf("Memory allocation failed during resizing.\n");
-// 				if (buffer) {
-// 					free(*buffer);
-// 					*buffer = NULL;
-// 				}
-// 				return NULL;
-// 			}
-// 			*buffer = temp;
-// 		}
-// 	}
-// 	return *buffer;
-// }
+
 
 char *read() {
 	char *buffer = NULL;
@@ -308,12 +257,8 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 				free((void *)ownerMenu.items);
 				ownerMenu.items = NULL;
 			}
-			freeAllOwners();
-			// if (currentOwner) {
-			// 	free(currentOwner);
-			// 	currentOwner = NULL;
-			// }
 			*keepGoing = 0;
+			freeAllOwners();
 			printf("Goodbye!\n");
 			exit(EXIT_SUCCESS);
 		}
@@ -341,10 +286,6 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 				ownerMenu.items = NULL;
 			}
 			freeAllOwners();
-			// if (currentOwner) {
-			// 	free(currentOwner);
-			// 	currentOwner = NULL;
-			// }
 			printf("Goodbye!\n");
 			exit(EXIT_SUCCESS);
 		}
@@ -371,10 +312,6 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 				}
 				*keepGoing = 0;
 				freeAllOwners();
-				// if (currentOwner) {
-				// 	free(currentOwner);
-				// 	currentOwner = NULL;
-				// }
 				printf("Goodbye!\n");
 				exit(EXIT_SUCCESS);
 			}
@@ -427,12 +364,8 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 			free((void *)ownerMenu.items);
 			ownerMenu.items = NULL;
 		}
-		freeAllOwners();
-		// if (currentOwner) {
-		// 	free(currentOwner);
-		// 	currentOwner = NULL;
-		// }
 		*keepGoing = 0;
+		freeAllOwners();
 		printf("Goodbye!\n");
 		exit(EXIT_SUCCESS);
 	}
@@ -483,9 +416,8 @@ Menu generateOwnerMenu(OwnerNode *selectedOwner) {
 	NodeArray pokedexNodes = {NULL, 0, 10};
 	pokedexNodes.nodes = malloc(pokedexNodes.capacity * sizeof(PokemonNode *));
 	if (!pokedexNodes.nodes) {
-		fprintf(stderr, "Memory allocation failed for NodeArray.\n");
-		freeAllOwners();
 		*keepGoing = 0;
+		freeAllOwners();
 		printf("Goodbye!");
 		exit(EXIT_FAILURE);
 	}
@@ -494,17 +426,12 @@ Menu generateOwnerMenu(OwnerNode *selectedOwner) {
 
 	MenuItem *menuItems = malloc(pokedexNodes.size * sizeof(MenuItem));
 	if (!menuItems) {
-		fprintf(stderr, "Memory allocation failed for menu items.\n");
 		if (pokedexNodes.nodes) {
 			free(pokedexNodes.nodes);
 			pokedexNodes.nodes = NULL;
 		}
-		freeAllOwners();
-		// if (currentOwner) {
-		// 	free(currentOwner);
-		// 	currentOwner = NULL;
-		// }
 		*keepGoing = 0;
+		freeAllOwners();
 		printf("Goodbye!");
 		exit(EXIT_FAILURE);
 	}
@@ -576,8 +503,9 @@ PokemonNode *searchPokemonBFS(PokemonNode *root, int id) {
 
 NodeArray *initNodeArray() {
     NodeArray *na = malloc(sizeof(NodeArray));
-    if (!na) return NULL;
-
+    if (!na) {
+		return NULL;
+	}
     na->size = 0;
     na->capacity = INITIAL_BUFFER_SIZE;
     na->nodes = malloc(sizeof(PokemonNode *) * na->capacity);
@@ -645,16 +573,23 @@ void *openPokedexMenu(void) {
 		return NULL;
 	}
 	managePokemonAndOwner(NULL, ownerName, pokemonID);
-	free(ownerName);
+	if (ownerName) {
+		free(ownerName);
+		ownerName = NULL;
+	}
 	return NULL;
 }
 
 
 PokemonNode *createPokemonNode(const PokemonData *data) {
-	if (!data) return NULL;
+	if (!data) {
+		return NULL;
+	}
 
 	PokemonNode *node = malloc(sizeof(PokemonNode));
-	if (!node) return NULL;
+	if (!node) {
+		return NULL;
+	}
 
 	node->data = malloc(sizeof(PokemonData));
 	if (!node->data) {
@@ -683,7 +618,6 @@ PokemonNode *createPokemonNode(const PokemonData *data) {
 	} else {
 		node->data->name = NULL;
 	}
-
 	node->left = node->right = NULL;
 	return node;
 }
@@ -897,7 +831,6 @@ void transferPokemonBFS(PokemonNode *src, PokemonNode **dest) {
 				size *= EXPANSION_FACTOR;
 				PokemonNode **tempQueue = realloc(queue, sizeof(PokemonNode *) * size);
 				if (tempQueue == NULL) {
-					fprintf(stderr, "Memory allocation failed\n");
 					if (queue) {
 						free(queue);
 						queue = NULL;
@@ -914,7 +847,6 @@ void transferPokemonBFS(PokemonNode *src, PokemonNode **dest) {
 				size *= EXPANSION_FACTOR;
 				PokemonNode **tempQueue = realloc(queue, sizeof(PokemonNode *) * size);
 				if (tempQueue == NULL) {
-					fprintf(stderr, "Memory allocation failed\n");
 					if (queue) {
 						free(queue);
 						queue = NULL;
@@ -937,7 +869,6 @@ void printPokemonNode(PokemonNode *node) {
 	if (!node || !node->data) {
 		return;
 	}
-
 	printf("ID: %d, ", node->data->id);
 	printf("Name: %s, ", node->data->name);
 	printf("Type: %s, ", getTypeName(node->data->TYPE));
@@ -985,7 +916,6 @@ void *enterExistingPokedexMenu(MenuIndex menuIndex, int choice, void *param) {
 
     MenuItem *ownerMenuItems = malloc(ownerCount * sizeof(MenuItem));
     if (!ownerMenuItems) {
-        fprintf(stderr, "Memory allocation failed.\n");
         return menuNavigator(MAIN_MENU, NULL);
     }
 
@@ -998,7 +928,6 @@ void *enterExistingPokedexMenu(MenuIndex menuIndex, int choice, void *param) {
         current = current->next;
     }
 
-    // Display menu
     Menu ownerMenu = { "Existing Pokedexes", ownerMenuItems, ownerCount, UNBORDERED_STYLE };
     printMenu(&ownerMenu);
 
@@ -1006,7 +935,7 @@ void *enterExistingPokedexMenu(MenuIndex menuIndex, int choice, void *param) {
     int chosenOwner = readIntSafe();
 
     if (chosenOwner < 1 || chosenOwner > ownerCount) {
-        printf("Invalid selection.\n");
+        printf("Invalid input.\n");
        	if (ownerMenuItems) {
 			free(ownerMenuItems);
 			ownerMenuItems = NULL;
@@ -1087,57 +1016,9 @@ void *deletePokedex() {
         free(current);
         current = NULL;
     }
-
     printf("Pokedex deleted.\n");
     return NULL;
 }
-// void *deletePokedex() {
-//     if (!ownerHead) {
-//         printf("No Pokedexes to delete.\n");
-//         return NULL;
-//     }
-
-//     int ownerCount = 0;
-//     OwnerNode *current = ownerHead;
-//     do {
-//         ownerCount++;
-//         current = current->next;
-//     } while (current != ownerHead);
-
-//     printf("Choose a Pokedex to delete by number: ");
-//     int choice = readIntSafe();
-
-//     if (choice < 1 || choice > ownerCount) {
-//         printf("Invalid choice. No Pokedex deleted.\n");
-//         return NULL;
-//     }
-
-//     current = ownerHead;
-//     for (int i = 1; i < choice; i++) {
-//         current = current->next;
-//     }
-
-//     if (current == ownerHead && current->next == ownerHead) {
-//         ownerHead = NULL;
-//     } else {
-//         current->prev->next = current->next;
-//         current->next->prev = current->prev;
-//         if (current == ownerHead) {
-//             ownerHead = current->next;
-//         }
-//     }
-
-// 	if (current->ownerName) {
-// 		free(current->ownerName);
-//     	current->ownerName = NULL;
-// 	}
-//     if (current) {
-// 		free(current);
-// 		current = NULL;
-// 	}
-//     printf("Pokedex deleted.\n");
-// 	return NULL;
-// }
 
 
 void swapOwnerData(OwnerNode *a, OwnerNode *b) {
@@ -1188,14 +1069,12 @@ void *sortOwners(void) {
         }
         end = current;
     } while (swapped);
-
     OwnerNode *tail = ownerHead;
     while (tail->next != ownerHead) {
         tail = tail->next;
     }
     tail->next = ownerHead;
     ownerHead->prev = tail;
-
     printf("Owners sorted by name.\n");
     return NULL;
 }
@@ -1212,7 +1091,6 @@ void *managePokemonAndOwner(OwnerNode *owner, char *ownerName, int pokemonID) {
     }
 
     if (!owner) {
-
         if (!ownerName) {
             printf("Owner name is required to create a new Pokedex.\n");
             return NULL;
@@ -1297,27 +1175,7 @@ void freePokemonNode(PokemonNode **node) {
     free(*node);
     *node = NULL;
 }
-// void freePokemonNode(PokemonNode *node) {
-// 	if (!node) {
-// 		return;
-// 	}
 
-// 	if (node->data) {
-// 		if (node->data->name) {
-// 			free(node->data->name);
-// 			node->data->name = NULL;
-// 		}
-// 		if (node->data) {
-// 			free(node->data);
-// 			node->data = NULL;
-// 		}
-// 	}
-// 	if (node) {
-// 		free(node);
-// 		node = NULL;
-// 	}
-// 	return;
-// }
 
 void freePokemonTree(PokemonNode **root) {
     if (!root || !*root) {
@@ -1328,13 +1186,6 @@ void freePokemonTree(PokemonNode **root) {
     freePokemonTree(&(*root)->right);
     freePokemonNode(root);
 }
-// void freePokemonTree(PokemonNode *root) {
-// 	if (!root) return;
-
-// 	freePokemonTree(root->left);
-// 	freePokemonTree(root->right);
-// 	freePokemonNode(root);
-// }
 
 void freeOwnerNode(OwnerNode *owner) {
 	if (!owner) return;
@@ -1353,39 +1204,27 @@ void freeOwnerNode(OwnerNode *owner) {
 
 void freeAllOwners(void) {
     if (!ownerHead) {
-		// if (currentOwner) {
-		// 	free(currentOwner);
-		// 	currentOwner = NULL;
-		// }
-		printf("All owners and their Pokedexes have been freed.\n");
         return;
 	}
 	OwnerNode *currentOwner = ownerHead;
-	printf("Freeing all owners...\n");
 	do {
 		if (!currentOwner->ownerName) {
 			if (!keepGoing) {
-				return;
-				// exit(0);
+				printf("Goodbye!\n");
+				// return;
+				exit(EXIT_FAILURE);
 			} else {
 				break;
 			}
 		}
 		OwnerNode *next = currentOwner->next;
-		printf("Freeing Pokedex for owner: %s\n", currentOwner->ownerName);
 		freeOwnerNode(currentOwner);
 		currentOwner = next;
 	} while (currentOwner != ownerHead);
 	ownerHead = NULL;
-	// if (currentOwner) {
-	// 	free(currentOwner);
-	// 	currentOwner = NULL;
-	// }
-	printf("All owners and their Pokedexes have been freed.\n");
 	return;
 }
 
-/////////////////////////////////////////////////
 
 PokemonQueue *createPokemonQueue() {
    PokemonQueue *pokemQueue = (PokemonQueue*)malloc(sizeof(PokemonQueue));
@@ -1472,28 +1311,7 @@ void removeOwnerFromCircularList(OwnerNode *toRemove) {
 		toRemove = NULL;
 	}
 }
-// void removeOwnerFromCircularList(OwnerNode *target) {
-// 	if (!target || !ownerHead) return;
 
-// 	if (ownerHead == target && ownerHead->next == ownerHead) {
-// 		freeOwnerNode(target);
-// 		ownerHead = NULL;
-// 		return;
-// 	}
-
-// 	OwnerNode *prevNode = target->prev;
-// 	OwnerNode *nextNode = target->next;
-
-// 	prevNode->next = nextNode;
-// 	nextNode->prev = prevNode;
-
-// 	if (ownerHead == target) {
-// 		ownerHead = nextNode;
-// 	}
-
-// 	freeOwnerNode(target);
-// 	return;
-// }
 
 void *printOwnersCircularWrapper(MenuIndex menuIndex, int choice, void *param) {
 	(void)menuIndex;
@@ -1562,7 +1380,6 @@ void displayAlphabetical(PokemonNode *root) {
     nodeArray.capacity = INITIAL_BUFFER_SIZE;
     nodeArray.nodes = malloc(sizeof(PokemonNode *) * nodeArray.capacity);
     if (!nodeArray.nodes) {
-        fprintf(stderr, "Memory allocation failed.\n");
         return;
     }
 
@@ -1610,7 +1427,7 @@ void displayBFS(PokemonNode *root) {
 
     PokemonQueue *queue = createPokemonQueue();
     if (!queue) {
-        fprintf(stderr, "Memory allocation failed for BFS queue.\n");
+        // fprintf(stderr, "Memory allocation failed for BFS queue.\n");
         return;
     }
 
@@ -1635,7 +1452,7 @@ void BFSGeneric(PokemonNode *root, VisitNodeFunc visit) {
 
     PokemonQueue *queue = createPokemonQueue();
     if (!queue) {
-        printf("Memory allocation failed for BFS queue.\n");
+        // printf("Memory allocation failed for BFS queue.\n");
         return;
     }
 
@@ -1981,7 +1798,6 @@ void collectAll(PokemonNode *root, NodeArray *nodeArray) {
         nodeArray->capacity *= 2;
         PokemonNode **temp = realloc(nodeArray->nodes, sizeof(PokemonNode *) * nodeArray->capacity);
         if (!temp) {
-            fprintf(stderr, "Memory allocation failed during resizing.\n");
 			if (nodeArray->nodes) {
 				free(nodeArray->nodes);
             	nodeArray->nodes = NULL;
@@ -1998,7 +1814,6 @@ void collectAll(PokemonNode *root, NodeArray *nodeArray) {
 	return;
 }
 
-/////////////////////////////////////////////////
 
 int main(void) {
 	do {
@@ -2009,12 +1824,7 @@ int main(void) {
 		*keepGoing = 0;
 	} while(keepGoing);
 	freeAllOwners();
-	// if (currentOwner) {
-	// 	free(currentOwner);
-	// 	currentOwner = NULL;
-	// }
 	printf("Goodbye!\n");
     return EXIT_SUCCESS;
 }
 
-/////////////////////////////////////////////////
