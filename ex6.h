@@ -750,8 +750,6 @@ PokemonNode *findParent(PokemonNode *root, PokemonNode *kid);
  */
 void collectAll(PokemonNode *root, NodeArray *na);
 
-/////////////////////////////////////////////////
-
 Menu generateOwnerMenu(OwnerNode *selectedOwner);
 
 const MenuItem mainMenuItems[] = {

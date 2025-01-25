@@ -175,30 +175,60 @@ char *strtok_r_impl(char *str, const char *delim, char **saveptr) {
 }
 
 Classification classify(const char *input) {
-	Classification result = {.isType = IS_STRING, .value.strValue = NULL};
+    Classification result = {.isType = IS_STRING, .value.strValue = NULL};
 
-	if (!input || *input == '\0') {
-		result.value.strValue = myStrdup("");
-		return result;
-	}
+    if (!input || *input == '\0') {
+        result.value.strValue = myStrdup("");
+        return result;
+    }
 
-	trimWhitespace((char *)input);
-	if (*input == '\0') {
-		result.value.strValue = myStrdup("");
-		return result;
-	}
+    trimWhitespace((char *)input);
+    if (*input == '\0') {
+        result.value.strValue = myStrdup("");
+        return result;
+    }
 
-	char *endptr = NULL;
-	long value = strtol(input, &endptr, 10);
-	if (*endptr == '\0' && value >= MIN_INT && value <= MAX_INT) {
-		result.isType = IS_INTEGER;
-		result.value.intValue = (int)value;
-	} else {
-		result.value.strValue = myStrdup(input);
-	}
+    char *endptr = NULL;
+    long value = strtol(input, &endptr, 10);
 
-	return result;
+    if (*endptr == '\0' && value >= MIN_INT && value <= MAX_INT) {
+        if (result.value.strValue) {
+            free(result.value.strValue);
+            result.value.strValue = NULL;
+        }
+        result.isType = IS_INTEGER;
+        result.value.intValue = (int)value;
+    } else {
+        result.value.strValue = myStrdup(input);
+    }
+
+    return result;
 }
+// Classification classify(const char *input) {
+// 	Classification result = {.isType = IS_STRING, .value.strValue = NULL};
+
+// 	if (!input || *input == '\0') {
+// 		result.value.strValue = myStrdup("");
+// 		return result;
+// 	}
+
+// 	trimWhitespace((char *)input);
+// 	if (*input == '\0') {
+// 		result.value.strValue = myStrdup("");
+// 		return result;
+// 	}
+
+// 	char *endptr = NULL;
+// 	long value = strtol(input, &endptr, 10);
+// 	if (*endptr == '\0' && value >= MIN_INT && value <= MAX_INT) {
+// 		result.isType = IS_INTEGER;
+// 		result.value.intValue = (int)value;
+// 	} else {
+// 		result.value.strValue = myStrdup(input);
+// 	}
+
+// 	return result;
+// }
 
 void freeClassification(Classification *result) {
 	if (result && !result->isType && result->value.strValue) {
