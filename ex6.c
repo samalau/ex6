@@ -1575,7 +1575,7 @@ PokemonNode *removePokemonByID(PokemonNode *root, int id) {
 
     if (!trashNode->left && !trashNode->right) {
         if (!parent) {
-            printf("Removing root Pokemon %s (ID %d).\n", trashNode->data->name, id);
+            printf("Removing Pokemon %s (ID %d).\n", trashNode->data->name, id);
             freePokemonNode(&trashNode);
             return NULL;
         }
@@ -1591,7 +1591,7 @@ PokemonNode *removePokemonByID(PokemonNode *root, int id) {
 
     if (trashNode->left && !trashNode->right) {
         if (!parent) {
-            printf("Removing root Pokemon %s (ID %d) with left child.\n", trashNode->data->name, id);
+            printf("Removing Pokemon %s (ID %d).\n", trashNode->data->name, id);
             PokemonNode *newRoot = trashNode->left;
             freePokemonNode(&trashNode);
             return newRoot;
@@ -1601,14 +1601,14 @@ PokemonNode *removePokemonByID(PokemonNode *root, int id) {
         } else {
             parent->right = trashNode->left;
         }
-        printf("Removing Pokemon %s (ID %d) with left child.\n", trashNode->data->name, id);
+        printf("Removing Pokemon %s (ID %d).\n", trashNode->data->name, id);
         freePokemonNode(&trashNode);
         return root;
     }
 
     if (!trashNode->left && trashNode->right) {
         if (!parent) {
-            printf("Removing root Pokemon %s (ID %d) with right child.\n", trashNode->data->name, id);
+            printf("Removing Pokemon %s (ID %d).\n", trashNode->data->name, id);
             PokemonNode *newRoot = trashNode->right;
             freePokemonNode(&trashNode);
             return newRoot;
@@ -1618,20 +1618,17 @@ PokemonNode *removePokemonByID(PokemonNode *root, int id) {
         } else {
             parent->right = trashNode->right;
         }
-        printf("Removing Pokemon %s (ID %d) with right child.\n", trashNode->data->name, id);
+        printf("Removing Pokemon %s (ID %d).\n", trashNode->data->name, id);
         freePokemonNode(&trashNode);
         return root;
     }
 
     if (trashNode->left && trashNode->right) {
         PokemonNode *successor = findMin(trashNode->right);
-        printf("Replacing Pokemon %s (ID %d) with successor %s (ID %d).\n",
-               trashNode->data->name, id, successor->data->name, successor->data->id);
-        trashNode->data = successor->data; // Replace data
+        trashNode->data = successor->data;
         trashNode->right = removePokemonByID(trashNode->right, successor->data->id); // Remove successor
         return root;
     }
-
     return root;
 }
 
