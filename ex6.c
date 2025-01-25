@@ -257,6 +257,10 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 		if (fullMenu) {
 			if (menuIndex == EXISTING_POKEDEX_MENU && currentOwner && ownerHead) {
 				printf("\n-- %s's Pokedex Menu --\n", currentOwner->ownerName);
+				if (ownerMenu.items) {
+					free(ownerMenu.items);
+					ownerMenu.items = NULL;
+				}
 				ownerMenu = generateOwnerMenu(ownerHead);
 				currentMenu = &ownerMenu;
 			}
@@ -281,6 +285,10 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 		}
 
 		if (menuIndex == MAIN_MENU) {
+			if (ownerMenu.items) {
+				free(ownerMenu.items);
+				ownerMenu.items = NULL;
+			}
 			currentOwner = NULL;
 		}
 
@@ -288,8 +296,12 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 
 		if (menuIndex == EXISTING_POKEDEX_MENU && (choice == currentMenu->itemCount || currentOwner == NULL)) {
 			menuIndex = MAIN_MENU;
+			if (ownerMenu.items) {
+				free(ownerMenu.items);
+				ownerMenu.items = NULL;
+			}
 			cleanupResources(&param, &ownerMenu, &keepGoing);
-			printf("Back to Main Menu.\n\n");
+			printf("Back to Main Menu.\n");
 			return menuNavigator(MAIN_MENU, NULL);
 		}
 
@@ -309,7 +321,10 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 
 		fullMenu = YES;
 	} while (keepGoing);
-
+	if (ownerMenu.items) {
+		free(ownerMenu.items);
+		ownerMenu.items = NULL;
+	}
 	cleanupResources(&param, &ownerMenu, &keepGoing);
 	printf("Goodbye!\n");
 	exit(EXIT_SUCCESS);
@@ -1883,18 +1898,18 @@ void collectAll(PokemonNode *root, NodeArray *nodeArray) {
 }
 
 void cleanupResources(void **param, Menu *ownerMenu, int *keepGoing) {
-	if (*param) {
-		free(*param);
-		*param = NULL;
-	}
-	if (ownerMenu->items) {
-		free((void *)ownerMenu->items);
-		ownerMenu->items = NULL;
-	}
-	if (keepGoing) {
-		stop();
-		freeAllOwners();
-	}
+    if (param && *param) {
+        free(*param);
+        *param = NULL;
+    }
+    if (ownerMenu->items) {
+        free(ownerMenu->items);
+        ownerMenu->items = NULL;
+    }
+    if (keepGoing) {
+        *keepGoing = 0;
+    }
+    freeAllOwners();
 }
 
 int main(void) {
