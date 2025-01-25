@@ -249,7 +249,8 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 
 	do {
 		if (menuIndex == MAIN_MENU && choice == MAIN_MENU_ITEM_COUNT) {
-			cleanupResources(&param, &ownerMenu, &keepGoing);
+			stop();
+			cleanupResources(&param, &ownerMenu);
 			printf("Goodbye!\n");
 			exit(EXIT_SUCCESS);
 		}
@@ -261,7 +262,7 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 					free(ownerMenu.items);
 					ownerMenu.items = NULL;
 				}
-				ownerMenu = generateOwnerMenu(ownerHead);
+				ownerMenu = generateOwnerMenu(ownerHead, &ownerMenu);
 				currentMenu = &ownerMenu;
 			}
 			currentMenu = &menus[menuIndex];
@@ -273,7 +274,8 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 
 		if (!keepGoing) {
 			menuIndex = MAIN_MENU;
-			cleanupResources(&param, &ownerMenu, &keepGoing);
+			stop();
+			cleanupResources(&param, &ownerMenu);
 			printf("Goodbye!\n");
 			exit(EXIT_SUCCESS);
 		}
@@ -300,14 +302,14 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 				free(ownerMenu.items);
 				ownerMenu.items = NULL;
 			}
-			cleanupResources(&param, &ownerMenu, &keepGoing);
+			cleanupResources(&param, &ownerMenu);
 			printf("Back to Main Menu.\n");
 			return menuNavigator(MAIN_MENU, NULL);
 		}
 
 		if (menuIndex == DISPLAY_MENU && selectedItem->MenuAction) {
 			selectedItem->MenuAction(menuIndex, choice, param);
-			cleanupResources(&param, &ownerMenu, &keepGoing);
+			cleanupResources(&param, &ownerMenu);
 			return menuNavigator(EXISTING_POKEDEX_MENU, NULL);
 		}
 
@@ -325,7 +327,8 @@ void *menuNavigator(MenuIndex menuIndex, void *param) {
 		free(ownerMenu.items);
 		ownerMenu.items = NULL;
 	}
-	cleanupResources(&param, &ownerMenu, &keepGoing);
+	stop();
+	cleanupResources(&param, &ownerMenu);
 	printf("Goodbye!\n");
 	exit(EXIT_SUCCESS);
 }
@@ -500,49 +503,107 @@ void printMenu(const Menu *menu) {
 	return;
 }
 
-Menu generateOwnerMenu(OwnerNode *selectedOwner) {
-	NodeArray pokedexNodes = {NULL, 0, 10};
-	pokedexNodes.nodes = malloc(pokedexNodes.capacity * sizeof(PokemonNode *));
-	if (!pokedexNodes.nodes) {
+
+Menu generateOwnerMenu(OwnerNode *selectedOwner, Menu *ownerMenu) {
+    if (ownerMenu && ownerMenu->items) {
+        for (int i = 0; i < ownerMenu->itemCount; i++) {
+            if (ownerMenu->items[i].prompt) {
+                free(ownerMenu->items[i].prompt);
+                ownerMenu->items[i].prompt = NULL;
+            }
+        }
+		if (ownerMenu->items) {
+			free(ownerMenu->items);
+			ownerMenu->items = NULL;
+		}
+        ownerMenu->items = NULL;
+        ownerMenu->itemCount = 0;
+    }
+
+    NodeArray pokedexNodes = {NULL, 0, 10};
+    pokedexNodes.nodes = malloc(pokedexNodes.capacity * sizeof(PokemonNode *));
+    if (!pokedexNodes.nodes) {
 		stop();
-		freeAllOwners();
-		printf("Goodbye!\n");
-		exit(EXIT_FAILURE);
-	}
+        freeAllOwners();
+        printf("Goodbye!\n");
+        exit(EXIT_FAILURE);
+    }
 
-	collectAll(selectedOwner->pokedexRoot, &pokedexNodes);
+    collectAll(selectedOwner->pokedexRoot, &pokedexNodes);
 
-	MenuItem *menuItems = malloc(pokedexNodes.size * sizeof(MenuItem));
-	if (!menuItems) {
+    MenuItem *menuItems = malloc(pokedexNodes.size * sizeof(MenuItem));
+    if (!menuItems) {
 		if (pokedexNodes.nodes) {
 			free(pokedexNodes.nodes);
 			pokedexNodes.nodes = NULL;
 		}
 		stop();
-		freeAllOwners();
-		printf("Goodbye!\n");
-		exit(EXIT_FAILURE);
-	}
+        freeAllOwners();
+        printf("Goodbye!\n");
+        exit(EXIT_FAILURE);
+    }
 
-	for (int i = 0; i < pokedexNodes.size; i++) {
-		menuItems[i].prompt = pokedexNodes.nodes[i]->data->name;
-		menuItems[i].MenuAction = NULL;
-		menuItems[i].nextMenuIndex = (MenuIndex)-1;
-		menuItems[i].styleType = ITEM_STYLE;
-	}
+    for (int i = 0; i < pokedexNodes.size; i++) {
+        menuItems[i].prompt = myStrdup(pokedexNodes.nodes[i]->data->name);
+        menuItems[i].MenuAction = NULL;
+        menuItems[i].nextMenuIndex = (MenuIndex)-1;
+        menuItems[i].styleType = ITEM_STYLE;
+    }
+
 	if (pokedexNodes.nodes) {
 		free(pokedexNodes.nodes);
 		pokedexNodes.nodes = NULL;
 	}
 
-	Menu pokedexMenu = {
-		.items = menuItems,
-		.itemCount = pokedexNodes.size,
-		.styleType = NONE
-	};
+    ownerMenu->items = menuItems;
+    ownerMenu->itemCount = pokedexNodes.size;
+    ownerMenu->styleType = NONE;
 
-	return pokedexMenu;
+    return *ownerMenu;
 }
+// Menu generateOwnerMenu(OwnerNode *selectedOwner) {
+// 	NodeArray pokedexNodes = {NULL, 0, 10};
+// 	pokedexNodes.nodes = malloc(pokedexNodes.capacity * sizeof(PokemonNode *));
+// 	if (!pokedexNodes.nodes) {
+// 		stop();
+// 		freeAllOwners();
+// 		printf("Goodbye!\n");
+// 		exit(EXIT_FAILURE);
+// 	}
+
+// 	collectAll(selectedOwner->pokedexRoot, &pokedexNodes);
+
+// 	MenuItem *menuItems = malloc(pokedexNodes.size * sizeof(MenuItem));
+// 	if (!menuItems) {
+// 		if (pokedexNodes.nodes) {
+// 			free(pokedexNodes.nodes);
+// 			pokedexNodes.nodes = NULL;
+// 		}
+// 		stop();
+// 		freeAllOwners();
+// 		printf("Goodbye!\n");
+// 		exit(EXIT_FAILURE);
+// 	}
+
+// 	for (int i = 0; i < pokedexNodes.size; i++) {
+// 		menuItems[i].prompt = pokedexNodes.nodes[i]->data->name;
+// 		menuItems[i].MenuAction = NULL;
+// 		menuItems[i].nextMenuIndex = (MenuIndex)-1;
+// 		menuItems[i].styleType = ITEM_STYLE;
+// 	}
+// 	if (pokedexNodes.nodes) {
+// 		free(pokedexNodes.nodes);
+// 		pokedexNodes.nodes = NULL;
+// 	}
+
+// 	Menu pokedexMenu = {
+// 		.items = menuItems,
+// 		.itemCount = pokedexNodes.size,
+// 		.styleType = NONE
+// 	};
+
+// 	return pokedexMenu;
+// }
 
 
 PokemonNode *searchPokemonBFS(PokemonNode *root, int id) {
@@ -1897,19 +1958,21 @@ void collectAll(PokemonNode *root, NodeArray *nodeArray) {
 	return;
 }
 
-void cleanupResources(void **param, Menu *ownerMenu, int *keepGoing) {
+void cleanupResources(void **param, Menu *ownerMenu) {
     if (param && *param) {
         free(*param);
         *param = NULL;
     }
-    if (ownerMenu->items) {
+
+    if (ownerMenu && ownerMenu->items) {
+        for (int i = 0; i < ownerMenu->itemCount; i++) {
+            if (ownerMenu->items[i].prompt) {
+                free(ownerMenu->items[i].prompt);
+            }
+        }
         free(ownerMenu->items);
         ownerMenu->items = NULL;
     }
-    if (keepGoing) {
-        *keepGoing = 0;
-    }
-    freeAllOwners();
 }
 
 int main(void) {

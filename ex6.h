@@ -121,7 +121,8 @@ const MenuStyles menuStyles = {
 };
 
 typedef struct {
-    const char *prompt;
+    char *prompt;
+    // const char *prompt;
     GenericMenuAction MenuAction;
     MenuIndex nextMenuIndex;
 	MenuStyleType styleType;
@@ -754,7 +755,8 @@ PokemonNode *findParent(PokemonNode *root, PokemonNode *kid);
  */
 void collectAll(PokemonNode *root, NodeArray *na);
 
-Menu generateOwnerMenu(OwnerNode *selectedOwner);
+Menu generateOwnerMenu(OwnerNode *selectedOwner, Menu *ownerMenu);
+// Menu generateOwnerMenu(OwnerNode *selectedOwner);
 
 const MenuItem mainMenuItems[] = {
 	{ "New Pokedex", openPokedexMenuWrapper, (MenuIndex)-1, NONE }, 
@@ -799,7 +801,7 @@ const Menu menus[] = {
 	{ "Display", displayMenuItems, DISPLAY_MENU_ITEM_COUNT, UNBORDERED_STYLE}
 };
 
-void cleanupResources(void **param, Menu *ownerMenu, int *keepGoing);
+void cleanupResources(void **param, Menu *ownerMenu);
 
 /**
  * @brief The main driver loop for the program (new pokedex, merge, fight, etc.).
