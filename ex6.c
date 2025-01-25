@@ -16,7 +16,7 @@ static const PokemonData *findPokemonByID(int id) {
     if (root) {
         PokemonNode *foundNode = searchPokemonBFS(root, id);
         if (foundNode) {
-            printf("Pokemon with ID %d is already in the Pokedex. No changes made.\n\n", id);
+            printf("Pokemon with ID %d is already in the Pokedex. No changes made.\n", id);
             return NULL;
         }
     }
@@ -418,7 +418,7 @@ Menu generateOwnerMenu(OwnerNode *selectedOwner) {
 	if (!pokedexNodes.nodes) {
 		*keepGoing = 0;
 		freeAllOwners();
-		printf("Goodbye!");
+		printf("Goodbye!\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -432,7 +432,7 @@ Menu generateOwnerMenu(OwnerNode *selectedOwner) {
 		}
 		*keepGoing = 0;
 		freeAllOwners();
-		printf("Goodbye!");
+		printf("Goodbye!\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -1210,9 +1210,7 @@ void freeAllOwners(void) {
 	do {
 		if (!currentOwner->ownerName) {
 			if (!keepGoing) {
-				printf("Goodbye!\n");
-				// return;
-				exit(EXIT_FAILURE);
+				return;
 			} else {
 				break;
 			}
@@ -1561,82 +1559,80 @@ void postOrderGeneric(PokemonNode *root){
 	return;
 }
 
-PokemonNode *removePokemonByID(PokemonNode *root, int id){
-	PokemonNode* trashNode = searchPokemonBFS(root,id);
-	if (trashNode == NULL){
-		return root;
-	}
-	PokemonNode *parent = findParent(root,trashNode);
-	if (trashNode->left == NULL && trashNode->right == NULL){
-		if (parent == NULL){
-			if (trashNode) {
-				free(trashNode);
-				trashNode = NULL;
-			}
-			return NULL;
-		}
-		if (parent->left == trashNode){
-			parent->left = NULL;
-		}
-		else {
-			parent->right = NULL;
-		}
-		if (trashNode) {
-			free(trashNode);
-			trashNode = NULL;
-		}
-		return root;
-	}
-	if (trashNode->left!=NULL && trashNode->right == NULL){
-		if (parent == NULL){
-			PokemonNode *newestRoot = trashNode->left;
-			if (trashNode) {
-				free(trashNode);
-				trashNode = NULL;
-			}
-			return newestRoot;
-		}
-		if (parent->left == trashNode){
-			parent->left = trashNode->left;
-		}
-		else {
-			parent->right = trashNode->left;
-		}
-		if (trashNode) {
-			free(trashNode);
-			trashNode = NULL;
-		}
-		return root;
-	}
-	if (trashNode->left == NULL && trashNode->right){
-		if (parent == NULL){
-			PokemonNode *newestRoot = trashNode->right;
-			if (trashNode) {
-				free(trashNode);
-				trashNode = NULL;
-			}
-			return newestRoot;
-		}
-		if (parent->left == trashNode){
-			parent->left = trashNode->right;
-		}
-		else {
-			parent->right = trashNode->right;
-		}
-		if (trashNode) {
-			free(trashNode);
-			trashNode = NULL;
-		}
-		return root;
-	}
-	if (trashNode->left !=NULL && trashNode->right!=NULL){
-		PokemonNode *successor = findMin(trashNode->right);
-		trashNode->data = successor->data;
-		trashNode->right = removePokemonByID(trashNode->right,successor->data->id);
-		return root;
-	}
-	printf("Pokemon with ID %d released.\n", id);
-	return root;
+PokemonNode *removePokemonByID(PokemonNode *root, int id) {
+    if (!root) {
+        printf("Pokedex is empty.\n");
+        return NULL;
+    }
+
+    PokemonNode *trashNode = searchPokemonBFS(root, id);
+    if (!trashNode) {
+        printf("Pokemon with ID %d not found in the Pokedex.\n", id);
+        return root;
+    }
+
+    PokemonNode *parent = findParent(root, trashNode);
+
+    if (!trashNode->left && !trashNode->right) {
+        if (!parent) {
+            printf("Removing root Pokemon %s (ID %d).\n", trashNode->data->name, id);
+            freePokemonNode(&trashNode);
+            return NULL;
+        }
+        if (parent->left == trashNode) {
+            parent->left = NULL;
+        } else {
+            parent->right = NULL;
+        }
+        printf("Removing Pokemon %s (ID %d).\n", trashNode->data->name, id);
+        freePokemonNode(&trashNode);
+        return root;
+    }
+
+    if (trashNode->left && !trashNode->right) {
+        if (!parent) {
+            printf("Removing root Pokemon %s (ID %d) with left child.\n", trashNode->data->name, id);
+            PokemonNode *newRoot = trashNode->left;
+            freePokemonNode(&trashNode);
+            return newRoot;
+        }
+        if (parent->left == trashNode) {
+            parent->left = trashNode->left;
+        } else {
+            parent->right = trashNode->left;
+        }
+        printf("Removing Pokemon %s (ID %d) with left child.\n", trashNode->data->name, id);
+        freePokemonNode(&trashNode);
+        return root;
+    }
+
+    if (!trashNode->left && trashNode->right) {
+        if (!parent) {
+            printf("Removing root Pokemon %s (ID %d) with right child.\n", trashNode->data->name, id);
+            PokemonNode *newRoot = trashNode->right;
+            freePokemonNode(&trashNode);
+            return newRoot;
+        }
+        if (parent->left == trashNode) {
+            parent->left = trashNode->right;
+        } else {
+            parent->right = trashNode->right;
+        }
+        printf("Removing Pokemon %s (ID %d) with right child.\n", trashNode->data->name, id);
+        freePokemonNode(&trashNode);
+        return root;
+    }
+
+    if (trashNode->left && trashNode->right) {
+        PokemonNode *successor = findMin(trashNode->right);
+        printf("Replacing Pokemon %s (ID %d) with successor %s (ID %d).\n",
+               trashNode->data->name, id, successor->data->name, successor->data->id);
+        trashNode->data = successor->data; // Replace data
+        trashNode->right = removePokemonByID(trashNode->right, successor->data->id); // Remove successor
+        return root;
+    }
+
+    return root;
 }
 
 PokemonNode *removeNodeBST(PokemonNode *root, int id) {
